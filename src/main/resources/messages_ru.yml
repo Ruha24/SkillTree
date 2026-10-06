@@ -1,0 +1,193 @@
+# Тексты SkillTree на русском (language: ru). После правки — /skilltree reload. Язык — language в plugins/ScreenUI/config.yml.
+#
+# Разметка MiniMessage: <red>, <gold>, <#e8b84a>, <bold>, <italic> ... (https://docs.advntr.dev/minimessage/format.html).
+# Без разметки текст берёт цвет по умолчанию для своего места (например, ошибки — красные).
+# Подстановки — {имя}: какие доступны, написано у каждой строки.
+# Если какого-то ключа здесь нет (добавился в обновлении) — берётся текст по умолчанию из плагина.
+
+# Формы слов для чисел: одна форма — всегда она; две — «1 / остальные»; три — «1 / 2-4 / 5-20» (по-русски).
+plural:
+  points: [очко, очка, очков]
+  hearts: [сердце, сердца, сердец]
+
+# ── Экран ────────────────────────────────────────────────────────────
+screen:
+  footer: "ЛКМ по узлу — изучить  ·  ЛКМ по пустому — тащить  ·  колесо — зум  ·  Shift — выход"
+  # {spent} {total} — очков потрачено/всего, {points} / {POINTS} — слово «очков» строчными/прописными
+  spent: "{spent} / {total} {POINTS} ВЛОЖЕНО"
+  reset-button: "СБРОС НАВЫКОВ"
+  # Кнопка слева снизу: вернуть дерево в исходное положение
+  center-button: "К ЦЕНТРУ"
+  # Кнопка справа снизу: {fov} — FOV, под который построен экран; клик — калибровка
+  fov-button: "FOV {fov} · изменить"
+  dragging: "Перетаскивание — ЛКМ, чтобы отпустить"
+  # Название скрытого узла (hidden: true), пока он не открыт
+  hidden-name: "???"
+
+# Состояние узла в строке подсказки внизу. {cost} — цена, {points} — слово «очко/очка/очков».
+state:
+  hidden: "скрытый навык"
+  learned: "изучено"
+  learn: "ЛКМ — изучить ({cost} {points})"
+  next-rank: "ЛКМ — следующий ранг ({cost} {points})"
+  # {parents} — список родителей (parent через parents-separator)
+  parents: "сначала изучите {parents}"
+  parent: "«{name}»"
+  parents-separator: " или "
+  # Между родителями узла с parent-mode: all (нужны все)
+  parents-separator-all: " и "
+  # {level} — нужный уровень, {max} — максимальный уровень игрока
+  level: "откроется на {level} уровне (ваш макс. {max})"
+  # {free} — свободно очков
+  points: "не хватает очков: нужно {cost}, осталось {free}"
+
+# Панель подробностей справа (при наведении на узел).
+details:
+  # Скрытый узел: {parents} — после чего откроется
+  hidden: "Откроется, когда изучите {parents}"
+  per-rank: " за ранг"
+  # {per_rank} — per-rank у узлов с рангами, иначе пусто
+  cost: "Цена: {cost} {points}{per_rank}"
+  start: "Начальный навык"
+  maxed: "Изучено полностью"
+  learned: "Изучено"
+  # Требования: зелёные — выполнено, красные — нет.
+  req-parents: "· после {parents}"
+  req-level: "· уровень {level} (ваш макс. {max})"
+  req-permission-ok: "· доступ есть"
+  # {text} — permission-text узла
+  req-permission: "· {text}"
+  req-points: "· свободно очков: {free}"
+  effects-next: "Сейчас → со следующим рангом:"
+  effects-first: "Первый ранг даёт:"
+  effects: "Даёт:"
+  # {name} — название атрибута (attributes ниже), {value} — значение, {next} — со следующим рангом
+  attribute: "  {name} {value}"
+  attribute-next: "  {name} {value} → {next}"
+  permissions: "  особые возможности"
+  commands: "  награда при изучении"
+  commands-rank: "  награда при изучении ранга"
+
+# Кнопка сброса. {tree} — подпись вкладки, {cost} — цена в уровнях, {refund} — вернётся очков,
+# {points} — слово «очков», {level} — уровень игрока.
+reset:
+  empty: "Сброс «{tree}»  ·  нечего сбрасывать"
+  armed: "ЛКМ ещё раз — сбросить «{tree}» за {cost} ур. опыта"
+  info: "<white>Сброс «{tree}»</white>  ·  <#7fd08a>вернёт {refund} {points}</#7fd08a>  ·  цена {cost} ур. опыта (у вас {level})"
+  info-poor: "<white>Сброс «{tree}»</white>  ·  <#7fd08a>вернёт {refund} {points}</#7fd08a>  ·  <red>цена {cost} ур. опыта (у вас {level})</red>"
+  done: "«{tree}»: навыки сброшены, вернулось {refund} {points}, потрачено {cost} ур. опыта."
+
+# Названия атрибутов в панели подробностей (id как в /attribute). Нет здесь — показывается id.
+attributes:
+  max_health: здоровье
+  armor: броня
+  armor_toughness: прочность брони
+  attack_damage: урон
+  attack_speed: скорость атаки
+  attack_knockback: отбрасывание
+  knockback_resistance: стойкость
+  movement_speed: скорость
+  sneaking_speed: скорость крадучись
+  jump_strength: прыжок
+  luck: удача
+  safe_fall_distance: безопасная высота
+  fall_damage_multiplier: урон от падения
+  burning_time: время горения
+  block_interaction_range: дальность до блоков
+  entity_interaction_range: дальность до существ
+  block_break_speed: скорость добычи
+  mining_efficiency: эффективность
+  submerged_mining_speed: добыча под водой
+  oxygen_bonus: запас воздуха
+  water_movement_efficiency: плавание
+  step_height: высота шага
+  max_absorption: поглощение
+
+# ── Сообщения игроку ─────────────────────────────────────────────────
+chat:
+  no-trees: "Деревья навыков не настроены — ошибки в trees/*.yml."
+  # {level} — новый уровень, {gains} — список level-points-entry через «, »
+  level-points: "Очки навыков за {level} уровень: {gains} — /skilltree"
+  level-points-entry: "«{tree}» +{count}"
+  # {count} {points} — сколько очков, {tree} — вкладка, {id} — id дерева
+  points-received: "Вы получили {count} {points} навыков «{tree}» — /skilltree {id}"
+  # Администратор выдал узел: {name} — название, {rank} / {ranks} — ранг, {tree} — вкладка
+  node-granted: "Вы получили навык «{name}» ({rank}/{ranks}) в дереве «{tree}»."
+  # {tree} — что ввели, {trees} — список id деревьев
+  unknown-tree: "Нет дерева «{tree}». Деревья: {trees}"
+
+# ── Ответы команд администратора ─────────────────────────────────────
+admin:
+  usage: "Использование: {usage}"
+  not-online: "Игрок {player} не в сети."
+  # {trees} — список id деревьев
+  reload-ok: "SkillTree: тексты и trees/*.yml перечитаны (деревья: {trees})."
+  reload-errors: "SkillTree: в trees/*.yml ошибки (см. консоль) — у тех деревьев оставлена прежняя версия."
+  # {which} — reset-one или reset-all
+  reset-done: "Навыки {player} сброшены ({which}), очки возвращены."
+  reset-one: "«{tree}»"
+  reset-all: "все деревья"
+  points-header: "{player} — макс. уровень {level}:"
+  points-line: "  «{tree}» ({id}): потрачено {spent} из {total} — базовых {base}, за уровни {level_points}, бонусных {bonus}"
+  points-changed: "{player}, «{tree}»: бонусных очков {old} → {new}."
+  points-negative: "Число очков не может быть отрицательным."
+  points-need-tree: "Деревьев несколько — укажите дерево: {usage}"
+  # learn / unlearn: {name} — название узла, {rank} / {ranks} — ранг после команды, {tree} — вкладка
+  learn-done: "{player}: «{name}» в «{tree}» — ранг {rank}/{ranks}."
+  unlearn-done: "{player}: «{name}» в «{tree}» — ранг {rank}/{ranks}."
+  # {nodes} — забытые вместе с узлом потомки
+  unlearn-cascade: "Вместе с ним забыты: {nodes}"
+  learn-maxed: "{player}: «{name}» уже изучен полностью."
+  # {cost} — цена ранга, {free} — свободно очков, {tree} — id дерева
+  learn-points: "{player}: не хватает очков на «{name}» — нужно {cost}, свободно {free}. Выдать: /skilltree points {player} {tree} add <n>"
+  unlearn-none: "{player}: «{name}» не изучен."
+  node-start: "«{name}» — стартовый узел, он изучен всегда."
+  # {node} — что ввели, {nodes} — id узлов дерева
+  unknown-node: "В дереве «{tree}» нет узла «{node}». Узлы: {nodes}"
+
+# Подсказки к командам администратора (ответ на неверные аргументы).
+usage:
+  admin: "/skilltree reload | reset <ник> [дерево] | points <ник> [дерево [add|take|set <n>]] | learn|unlearn <ник> <дерево> <узел>"
+  reset: "/skilltree reset <ник> [дерево]"
+  points: "/skilltree points <ник> [дерево [add|take|set <n>]]"
+  learn: "/skilltree learn <ник> <дерево> <узел>"
+  unlearn: "/skilltree unlearn <ник> <дерево> <узел>"
+
+# ── Деревья: умолчания и ошибки в trees/*.yml (пишутся в консоль) ───
+tree:
+  # Заголовок экрана, если в дереве нет title
+  default-title: "ДРЕВО НАВЫКОВ"
+  # Подсказка у узла с permission, если нет permission-text
+  no-permission: "нет доступа"
+
+# {path} — где в файле ошибка, {value} — что там написано.
+errors:
+  tree-id: "имя файла дерева «{id}» — только a-z, 0-9, _ . -"
+  negative: "{path}: не может быть меньше 0"
+  no-nodes: "nodes: нет ни одного узла"
+  node-id: "{path}: id узла — только a-z, 0-9, _ . -"
+  node-section: "{path}: ожидается секция с x, y, icon, name"
+  nexo-item: "{path}: нет предмета Nexo «{item}» (Nexo не установлен?)"
+  item: "{path}: нет такого предмета «{item}»"
+  icon-model: "{path}: «{value}» — нужно namespace:путь"
+  grid: "{path}: x и y — целые клетки сетки"
+  parent-mode: "{path}: any или all, а не «{value}»"
+  ranks: "{path}: не меньше 1"
+  cell-taken: "{path}: клетка {x},{y} уже занята узлом {other}"
+  unknown-parent: "{path}: нет узла «{parent}»"
+  unreachable: "{path}: не достижим от стартовых узлов — родители замкнулись в круг"
+  no-start: "nodes: нужен хотя бы один стартовый узел (без parent)"
+  label: "labels: у подписи нужны x, y и text — {value}"
+  respec-negative: "respec: levels и per-point не могут быть меньше 0"
+  level-points-negative: "level-points: every, amount и max не могут быть меньше 0"
+  milestone: "level-points.milestones: «{value}» — нужно «уровень: очков», уровень больше 0"
+  level-points-both: "level-points: задайте либо every, либо milestones"
+  attribute: "{path}: нет атрибута «{attr}»"
+  attribute-value: "{path}: ожидается число или процент (2, -0.5, 10%) — «{value}»"
+
+# ── Консоль ──────────────────────────────────────────────────────────
+log:
+  # {file} — файл дерева; дальше — список ошибок
+  tree-errors: "Ошибки в trees/{file}:"
+  # {node} — id узла, {command} — команда
+  command-failed: "Команда навыка {node} упала: {command}"

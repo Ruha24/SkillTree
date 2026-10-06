@@ -1,0 +1,196 @@
+# SkillTree texts in English (language: en). After editing — /skilltree reload. Language — language in plugins/ScreenUI/config.yml.
+#
+# MiniMessage markup: <red>, <gold>, <#e8b84a>, <bold>, <italic> ... (https://docs.advntr.dev/minimessage/format.html).
+# Without markup the text takes the default color of its place (e.g. errors are red).
+# Placeholders are {name}: the available ones are listed next to each line.
+# If a key is missing here (added in an update), the plugin's built-in text is used.
+#
+# Another language: set language: <code> in plugins/ScreenUI/config.yml — the plugin creates messages_<code>.yml as a copy
+# of this file, translate it.
+
+# Word forms for numbers: one form — always it; two — "1 / other"; three — "1 / 2-4 / 5-20" (Russian rules).
+plural:
+  points: [point, points]
+  hearts: [heart, hearts]
+
+# ── Screen ───────────────────────────────────────────────────────────
+screen:
+  footer: "LMB on a node — learn  ·  LMB on empty space — drag  ·  wheel — zoom  ·  Shift — exit"
+  # {spent} {total} — points spent/total, {points} / {POINTS} — the word "points" lower/upper case
+  spent: "{spent} / {total} {POINTS} SPENT"
+  reset-button: "RESET SKILLS"
+  # Bottom-left button: move the tree back to its initial position
+  center-button: "RECENTER"
+  # Bottom-right button: {fov} — FOV the screen is built for; click — calibration
+  fov-button: "FOV {fov} · change"
+  dragging: "Dragging — LMB to release"
+  # Name of a hidden node (hidden: true) until it is revealed
+  hidden-name: "???"
+
+# Node state in the hint line at the bottom. {cost} — price, {points} — the word "point/points".
+state:
+  hidden: "hidden skill"
+  learned: "learned"
+  learn: "LMB — learn ({cost} {points})"
+  next-rank: "LMB — next rank ({cost} {points})"
+  # {parents} — list of parents (parent joined with parents-separator)
+  parents: "learn {parents} first"
+  parent: "\"{name}\""
+  parents-separator: " or "
+  # Between parents of a node with parent-mode: all (all are required)
+  parents-separator-all: " and "
+  # {level} — required level, {max} — player's highest level
+  level: "unlocks at level {level} (your max {max})"
+  # {free} — free points
+  points: "not enough points: need {cost}, have {free}"
+
+# Details panel on the right (when hovering a node).
+details:
+  # Hidden node: {parents} — what reveals it
+  hidden: "Unlocks when you learn {parents}"
+  per-rank: " per rank"
+  # {per_rank} — per-rank for nodes with ranks, otherwise empty
+  cost: "Cost: {cost} {points}{per_rank}"
+  start: "Starting skill"
+  maxed: "Fully learned"
+  learned: "Learned"
+  # Requirements: green — met, red — not.
+  req-parents: "· after {parents}"
+  req-level: "· level {level} (your max {max})"
+  req-permission-ok: "· access granted"
+  # {text} — the node's permission-text
+  req-permission: "· {text}"
+  req-points: "· free points: {free}"
+  effects-next: "Now → with the next rank:"
+  effects-first: "The first rank gives:"
+  effects: "Gives:"
+  # {name} — attribute name (attributes below), {value} — value, {next} — with the next rank
+  attribute: "  {name} {value}"
+  attribute-next: "  {name} {value} → {next}"
+  permissions: "  special abilities"
+  commands: "  reward on learning"
+  commands-rank: "  reward for each rank"
+
+# Reset button. {tree} — tab name, {cost} — price in levels, {refund} — points returned,
+# {points} — the word "points", {level} — player's level.
+reset:
+  empty: "Reset \"{tree}\"  ·  nothing to reset"
+  armed: "LMB again — reset \"{tree}\" for {cost} XP levels"
+  info: "<white>Reset \"{tree}\"</white>  ·  <#7fd08a>returns {refund} {points}</#7fd08a>  ·  costs {cost} XP levels (you have {level})"
+  info-poor: "<white>Reset \"{tree}\"</white>  ·  <#7fd08a>returns {refund} {points}</#7fd08a>  ·  <red>costs {cost} XP levels (you have {level})</red>"
+  done: "\"{tree}\": skills reset, {refund} {points} returned, {cost} XP levels spent."
+
+# Attribute names in the details panel (ids as in /attribute). Not listed — the id is shown.
+attributes:
+  max_health: health
+  armor: armor
+  armor_toughness: armor toughness
+  attack_damage: damage
+  attack_speed: attack speed
+  attack_knockback: knockback
+  knockback_resistance: knockback resistance
+  movement_speed: speed
+  sneaking_speed: sneaking speed
+  jump_strength: jump
+  luck: luck
+  safe_fall_distance: safe fall height
+  fall_damage_multiplier: fall damage
+  burning_time: burning time
+  block_interaction_range: block reach
+  entity_interaction_range: entity reach
+  block_break_speed: mining speed
+  mining_efficiency: mining efficiency
+  submerged_mining_speed: underwater mining
+  oxygen_bonus: oxygen
+  water_movement_efficiency: swimming
+  step_height: step height
+  max_absorption: absorption
+
+# ── Messages to players ──────────────────────────────────────────────
+chat:
+  no-trees: "Skill trees are not configured — errors in trees/*.yml."
+  # {level} — new level, {gains} — list of level-points-entry joined with ", "
+  level-points: "Skill points for level {level}: {gains} — /skilltree"
+  level-points-entry: "\"{tree}\" +{count}"
+  # {count} {points} — how many points, {tree} — tab name, {id} — tree id
+  points-received: "You got {count} {points} for \"{tree}\" — /skilltree {id}"
+  # An admin granted a node: {name} — node name, {rank} / {ranks} — rank, {tree} — tab name
+  node-granted: "You got the skill \"{name}\" ({rank}/{ranks}) in \"{tree}\"."
+  # {tree} — what was typed, {trees} — list of tree ids
+  unknown-tree: "No tree \"{tree}\". Trees: {trees}"
+
+# ── Admin command replies ────────────────────────────────────────────
+admin:
+  usage: "Usage: {usage}"
+  not-online: "Player {player} is not online."
+  # {trees} — list of tree ids
+  reload-ok: "SkillTree: texts and trees/*.yml reloaded (trees: {trees})."
+  reload-errors: "SkillTree: errors in trees/*.yml (see console) — those trees keep their previous version."
+  # {which} — reset-one or reset-all
+  reset-done: "Skills of {player} reset ({which}), points returned."
+  reset-one: "\"{tree}\""
+  reset-all: "all trees"
+  points-header: "{player} — max level {level}:"
+  points-line: "  \"{tree}\" ({id}): spent {spent} of {total} — base {base}, from levels {level_points}, bonus {bonus}"
+  points-changed: "{player}, \"{tree}\": bonus points {old} → {new}."
+  points-negative: "The number of points can't be negative."
+  points-need-tree: "There are several trees — specify one: {usage}"
+  # learn / unlearn: {name} — node name, {rank} / {ranks} — rank after the command, {tree} — tab name
+  learn-done: "{player}: \"{name}\" in \"{tree}\" — rank {rank}/{ranks}."
+  unlearn-done: "{player}: \"{name}\" in \"{tree}\" — rank {rank}/{ranks}."
+  # {nodes} — descendants forgotten together with the node
+  unlearn-cascade: "Forgotten along with it: {nodes}"
+  learn-maxed: "{player}: \"{name}\" is already fully learned."
+  # {cost} — rank cost, {free} — free points, {tree} — tree id
+  learn-points: "{player}: not enough points for \"{name}\" — need {cost}, have {free}. Grant: /skilltree points {player} {tree} add <n>"
+  unlearn-none: "{player}: \"{name}\" is not learned."
+  node-start: "\"{name}\" is a starting node, it is always learned."
+  # {node} — what was typed, {nodes} — node ids of the tree
+  unknown-node: "Tree \"{tree}\" has no node \"{node}\". Nodes: {nodes}"
+
+# Admin command hints (reply to wrong arguments).
+usage:
+  admin: "/skilltree reload | reset <player> [tree] | points <player> [tree [add|take|set <n>]] | learn|unlearn <player> <tree> <node>"
+  reset: "/skilltree reset <player> [tree]"
+  points: "/skilltree points <player> [tree [add|take|set <n>]]"
+  learn: "/skilltree learn <player> <tree> <node>"
+  unlearn: "/skilltree unlearn <player> <tree> <node>"
+
+# ── Trees: defaults and errors in trees/*.yml (written to the console) ──
+tree:
+  # Screen title if the tree has no title
+  default-title: "SKILL TREE"
+  # Hint for a node with permission if it has no permission-text
+  no-permission: "no access"
+
+# {path} — where in the file, {value} — what is written there.
+errors:
+  tree-id: "tree file name \"{id}\" — only a-z, 0-9, _ . -"
+  negative: "{path}: can't be less than 0"
+  no-nodes: "nodes: there are no nodes"
+  node-id: "{path}: node id — only a-z, 0-9, _ . -"
+  node-section: "{path}: expected a section with x, y, icon, name"
+  nexo-item: "{path}: no Nexo item \"{item}\" (is Nexo installed?)"
+  item: "{path}: no such item \"{item}\""
+  icon-model: "{path}: \"{value}\" — expected namespace:path"
+  grid: "{path}: x and y must be whole grid cells"
+  parent-mode: "{path}: any or all, not \"{value}\""
+  ranks: "{path}: at least 1"
+  cell-taken: "{path}: cell {x},{y} is already taken by node {other}"
+  unknown-parent: "{path}: no node \"{parent}\""
+  unreachable: "{path}: unreachable from starting nodes — parents form a loop"
+  no-start: "nodes: at least one starting node (without parent) is required"
+  label: "labels: a label needs x, y and text — {value}"
+  respec-negative: "respec: levels and per-point can't be less than 0"
+  level-points-negative: "level-points: every, amount and max can't be less than 0"
+  milestone: "level-points.milestones: \"{value}\" — expected \"level: points\", level above 0"
+  level-points-both: "level-points: set either every or milestones"
+  attribute: "{path}: no attribute \"{attr}\""
+  attribute-value: "{path}: expected a number or percent (2, -0.5, 10%) — \"{value}\""
+
+# ── Console ──────────────────────────────────────────────────────────
+log:
+  # {file} — tree file; the list of errors follows
+  tree-errors: "Errors in trees/{file}:"
+  # {node} — node id, {command} — the command
+  command-failed: "Skill command of {node} failed: {command}"

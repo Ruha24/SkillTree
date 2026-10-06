@@ -1,0 +1,23 @@
+name: SkillTree
+version: '${version}'
+main: com.skilltree.SkillTreePlugin
+api-version: '1.21'
+folia-supported: true
+depend: [ScreenUI]
+softdepend: [PlaceholderAPI, Nexo]
+author: ScafyX
+description: Skill trees on a ScreenUI screen — mouse cursor, pan, zoom, tabs. No mods or resource pack.
+
+commands:
+  skilltree:
+    description: Open/close the skill tree.
+    usage: /skilltree [tree | fov [30-110|reset] | reload | reset <player> [tree] | points <player> [tree [add|take|set <n>]] | learn|unlearn <player> <tree> <node>]
+    permission: skilltree.use
+
+permissions:
+  skilltree.use:
+    description: Access to /skilltree.
+    default: true
+  skilltree.admin:
+    description: /skilltree reload, reset, points, learn and unlearn.
+    default: op

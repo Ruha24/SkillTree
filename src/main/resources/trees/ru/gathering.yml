@@ -1,0 +1,164 @@
+# Второе дерево — «Ремесло»: добыча, работа под водой, стройка. Формат — как в main.yml (там подробное
+# описание всех полей). Очки у этого дерева свои: /skilltree points <ник> gathering add <n>.
+
+tab: "РЕМЕСЛО"
+order: 2
+
+title: "РЕМЕСЛО"
+
+points: 2
+
+level-points:
+  enabled: true
+  every: 10
+  amount: 1
+  max: 8
+
+respec:
+  enabled: true
+  levels: 3
+  per-point: 1
+
+nodes:
+  core: { x: 0, y: 0, icon: wooden_pickaxe, name: "Подмастерье", description: "начало ремесла" }
+
+  # ── Добыча (вправо) ────────────────────────────────────────────────
+  d1:
+    x: 1
+    y: 0
+    icon: iron_pickaxe
+    name: "Шахтёр"
+    description: "+10% к скорости добычи"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { block_break_speed: 10% }
+  d2:
+    x: 2
+    y: 0
+    icon: diamond_pickaxe
+    name: "Твёрдая рука"
+    description: "+2 к эффективности инструмента"
+    parent: d1
+    effects:
+      attributes: { mining_efficiency: 2 }
+  d3:
+    x: 3
+    y: 0
+    icon: netherite_pickaxe
+    name: "Мастер-шахтёр"
+    description: "+15% к скорости добычи"
+    parent: d2
+    cost: 2
+    min-level: 20
+    effects:
+      attributes: { block_break_speed: 15% }
+  d4:
+    x: 2
+    y: 1
+    icon: torch
+    name: "Факелы"
+    description: "32 факела (разово)"
+    parent: d2
+    effects:
+      commands:
+        - "give {player} torch 32"
+
+  # ── Вода (влево) ───────────────────────────────────────────────────
+  w1:
+    x: -1
+    y: 0
+    icon: prismarine_shard
+    name: "Ныряльщик"
+    description: "дольше без воздуха"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { oxygen_bonus: 1 }
+  w2:
+    x: -2
+    y: 0
+    icon: heart_of_the_sea
+    name: "Подводник"
+    description: "быстрее копаете под водой"
+    parent: w1
+    effects:
+      attributes: { submerged_mining_speed: 0.3 }
+  w3:
+    x: -2
+    y: 1
+    icon: nautilus_shell
+    name: "Пловец"
+    description: "быстрее плаваете"
+    parent: w2
+    effects:
+      attributes: { water_movement_efficiency: 0.33 }
+  w4:
+    x: -3
+    y: 0
+    icon: trident
+    name: "Хозяин глубин"
+    description: "под водой как на суше"
+    parent: w2
+    cost: 2
+    effects:
+      attributes: { submerged_mining_speed: 0.5, water_movement_efficiency: 0.33 }
+
+  # ── Стройка (вверх) ────────────────────────────────────────────────
+  b1:
+    x: 0
+    y: 1
+    icon: brick
+    name: "Каменщик"
+    description: "+0.5 блока к дальности взаимодействия"
+    parent: core
+    ranks: 2
+    effects:
+      attributes: { block_interaction_range: 0.5 }
+  b2:
+    x: 0
+    y: 2
+    icon: ladder
+    name: "Леса"
+    description: "падение без урона на 2 блока выше"
+    parent: b1
+    effects:
+      attributes: { safe_fall_distance: 2 }
+  b3:
+    x: -1
+    y: 2
+    icon: rabbit_foot
+    name: "Ступени"
+    description: "шагаете на блок без прыжка"
+    parent: b2
+    min-level: 10
+    effects:
+      attributes: { step_height: 0.5 }
+
+  # ── Ферма (вниз) ───────────────────────────────────────────────────
+  h1:
+    x: 0
+    y: -1
+    icon: wheat
+    name: "Фермер"
+    description: "16 костной муки (разово)"
+    parent: core
+    effects:
+      commands:
+        - "give {player} bone_meal 16"
+  h2:
+    x: 0
+    y: -2
+    icon: golden_hoe
+    name: "Урожай"
+    description: "+1 к удаче (рыбалка, сундуки)"
+    parent: h1
+    ranks: 2
+    effects:
+      attributes: { luck: 1 }
+
+labels:
+  - { x: 3, y: -0.55, text: "ДОБЫЧА" }
+  - { x: -3, y: -0.55, text: "ВОДА" }
+  - { x: 0, y: 2.55, text: "СТРОЙКА" }
+  - { x: 0, y: -2.55, text: "ФЕРМА" }

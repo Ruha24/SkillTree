@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Инструкция к плагину SkillTree: установка, управление, команды и права, настройка деревьев навыков, очки, тексты и плейсхолдеры.">
+<title>SkillTree — деревья навыков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: оглавление слева + колонка текста; сверху — «экран» с мини-деревом, как в игре */
+:root {
+  --bg: #f4f3ef;
+  --panel: #ffffff;
+  --panel-2: #ecebe5;
+  --line: #d9d6cc;
+  --fg: #1d1c22;
+  --muted: #5f5c66;
+  --gold: #a87a16;
+  --gold-fill: #e8b84a;
+  --gold-ink: #2a2008;
+  --ok: #2f7d45;
+  --bad: #b23b3b;
+  --code-bg: #ebe8df;
+  --node-off: #cfccc2;
+  --node-avail: #a9a6b4;
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121217; --panel: #1b1b21; --panel-2: #23232b; --line: #2f2f39;
+    --fg: #ecebf2; --muted: #9a9aaa; --gold: #e8b84a; --gold-fill: #e8b84a; --gold-ink: #241a04;
+    --ok: #7fd08a; --bad: #e06a6a; --code-bg: #202027; --node-off: #22222a; --node-avail: #4a4a58;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121217; --panel: #1b1b21; --panel-2: #23232b; --line: #2f2f39;
+  --fg: #ecebf2; --muted: #9a9aaa; --gold: #e8b84a; --gold-fill: #e8b84a; --gold-ink: #241a04;
+  --ok: #7fd08a; --bad: #e06a6a; --code-bg: #202027; --node-off: #22222a; --node-avail: #4a4a58;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+img { max-width: 100%; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 64px; }
+
+/* ── Шапка ── */
+.hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 32px; align-items: center; padding-block: 8px 40px; border-bottom: 1px solid var(--line); }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+h1 { font: 700 clamp(30px, 5vw, 48px)/1.08 var(--display); margin: 14px 0 16px; text-wrap: balance; letter-spacing: -.01em; }
+.lead { font-size: 18px; color: var(--muted); max-width: 56ch; margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.chip { font: 500 13px/1 var(--mono); padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: var(--panel); }
+
+/* мини-дерево: как экран в игре */
+.screen { background: #15151b; border-radius: 6px; padding: 18px; color: #ecebf2; box-shadow: 0 1px 0 rgba(255,255,255,.04) inset; }
+.screen-head { text-align: center; font: 700 14px/1 var(--display); letter-spacing: .06em; }
+.screen-sub { text-align: center; font: 12px/1 var(--mono); color: #9a9aaa; margin: 8px 0 14px; }
+.tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+.tab { font: 600 11px/1 var(--body); letter-spacing: .06em; padding: 6px 10px; background: #1b1b21; color: #9a9aaa; }
+.tab.on { background: #5c481e; color: #fff; }
+.grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; max-width: 300px; margin: 0 auto; aspect-ratio: 7 / 7; }
+.cell { position: relative; display: grid; place-items: center; }
+.n { width: 58%; aspect-ratio: 1; background: #22222a; position: relative; z-index: 1; }
+.n.av { background: #4a4a58; }
+.n.on { background: #e8b84a; }
+.n.part { background: #96702a; }
+.n.hid::after { content: "?"; position: absolute; inset: 0; display: grid; place-items: center; font: 600 13px/1 var(--body); color: #9a9aaa; }
+.h::before, .v::before { content: ""; position: absolute; background: #3a3a44; }
+.h::before { height: 3px; left: 0; right: 0; top: calc(50% - 1.5px); }
+.v::before { width: 3px; top: 0; bottom: 0; left: calc(50% - 1.5px); }
+.h.g::before, .v.g::before { background: #e8b84a; }
+.screen-tip { text-align: center; font: 12px/1.4 var(--body); color: #c7c7d2; margin-top: 12px; }
+.screen-tip b { color: #e8b84a; font-weight: 600; }
+
+/* ── Основная часть ── */
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; margin-top: 40px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: 14px; }
+nav.toc p { font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.toc a { display: block; padding: 5px 0 5px 12px; border-left: 2px solid var(--line); color: var(--muted); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); border-left-color: var(--gold); outline: none; }
+
+main { min-width: 0; }
+section { padding-block: 8px 36px; }
+h2 { font: 700 22px/1.2 var(--display); margin: 0 0 14px; text-wrap: balance; scroll-margin-top: 24px; }
+h3 { font: 600 17px/1.3 var(--body); margin: 26px 0 8px; }
+p { margin: 0 0 12px; max-width: 68ch; }
+ul.plain { margin: 0 0 12px; padding-left: 20px; max-width: 68ch; }
+ul.plain li { margin-bottom: 6px; }
+code { font: 14px/1.4 var(--mono); background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+a { color: var(--gold); }
+
+.table-box { overflow-x: auto; margin: 6px 0 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font: 500 12px/1.2 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--panel-2); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { white-space: nowrap; }
+td code { white-space: nowrap; }
+
+pre { margin: 6px 0 16px; padding: 16px 18px; background: var(--code-bg); border-radius: 4px; overflow-x: auto; font: 13.5px/1.55 var(--mono); }
+pre code { background: none; padding: 0; font: inherit; }
+.c { color: var(--muted); }
+.k { color: var(--gold); }
+
+.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 6px 0 14px; }
+.key { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+.key kbd { font: 600 13px/1 var(--mono); color: var(--gold); display: block; margin-bottom: 6px; }
+.key span { font-size: 14.5px; color: var(--muted); }
+
+.note { border-left: 3px solid var(--gold); padding: 10px 14px; background: var(--panel); margin: 8px 0 16px; max-width: 68ch; font-size: 15px; }
+.req { font-family: var(--mono); font-size: 14px; }
+.req .y { color: var(--ok); } .req .x { color: var(--bad); }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; }
+  .layout { grid-template-columns: 1fr; gap: 8px; }
+  nav.toc { position: static; }
+  nav.toc ol { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  nav.toc a { transition: color .15s, border-color .15s; }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">Плагин для Paper / Folia</div>
+      <h1>SkillTree — деревья навыков</h1>
+      <p class="lead">Экран навыков прямо в мире: без модов и без обязательного ресурспака. Игрок открывает <code>/skilltree</code>, двигает мышью курсор, изучает узлы, а навыки дают атрибуты, права и награды.</p>
+      <div class="facts">
+        <span class="chip">Paper 26.x · Folia</span>
+        <span class="chip">Java 25</span>
+        <span class="chip">PlaceholderAPI — по желанию</span>
+        <span class="chip">Nexo — по желанию</span>
+      </div>
+    </div>
+    <figure class="screen" aria-label="Пример экрана: дерево навыков с двумя вкладками">
+      <div class="tabs"><span class="tab on">ОСНОВЫ</span><span class="tab">РЕМЕСЛО</span></div>
+      <div class="screen-head">ДРЕВО НАВЫКОВ</div>
+      <div class="screen-sub">4 / 10 ОЧКОВ ВЛОЖЕНО</div>
+      <div class="grid">
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell h g"><span class="n on"></span></div><div class="cell h"><span class="n av"></span></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell"></div><div class="cell v g"><span class="n on"></span></div><div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell"></div>
+        <div class="cell h"><span class="n"></span></div><div class="cell h"><span class="n"></span></div><div class="cell h"><span class="n av"></span></div><div class="cell h g"><span class="n on"></span></div><div class="cell h g"><span class="n part"></span></div><div class="cell h"><span class="n av"></span></div><div class="cell"><span class="n"></span></div>
+        <div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell"></div><div class="cell v"><span class="n av"></span></div><div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"><span class="n"></span></div><div class="cell h"><span class="n"></span></div><div class="cell h"><span class="n"></span></div><div class="cell"></div><div class="cell"></div>
+        <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell v"><span class="n hid"></span></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      </div>
+      <figcaption class="screen-tip">Эхо <b>1/3</b> · ЛКМ — следующий ранг (1 очко)</figcaption>
+    </figure>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Содержание">
+      <p>Содержание</p>
+      <ol>
+        <li><a href="#install">Установка</a></li>
+        <li><a href="#controls">Управление</a></li>
+        <li><a href="#commands">Команды и права</a></li>
+        <li><a href="#trees">Деревья</a></li>
+        <li><a href="#nodes">Узлы</a></li>
+        <li><a href="#points">Очки и сброс</a></li>
+        <li><a href="#config">config.yml</a></li>
+        <li><a href="#messages">Тексты</a></li>
+        <li><a href="#papi">Плейсхолдеры</a></li>
+        <li><a href="#limits">Ограничения</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="install">
+        <h2>Установка</h2>
+        <ul class="plain">
+          <li>Положите <code>ScreenUI-1.0.0.jar</code> (движок экранов) и <code>SkillTree-1.1.0.jar</code> в <code>plugins/</code> и перезапустите сервер.</li>
+          <li>Язык выбирается в <code>plugins/ScreenUI/config.yml</code> (<code>language: ru</code>). SkillTree создаст в <code>plugins/SkillTree/</code> тексты и папку <code>trees/</code> с двумя готовыми деревьями: <code>main</code> и <code>gathering</code>.</li>
+          <li>Откройте экран командой <code>/skilltree</code>. Право на неё по умолчанию есть у всех.</li>
+        </ul>
+        <p>PlaceholderAPI и Nexo необязательны. С PlaceholderAPI появятся плейсхолдеры <code>%skilltree_…%</code>, с Nexo — иконки узлов из его предметов.</p>
+      </section>
+
+      <section id="controls">
+        <h2>Управление на экране</h2>
+        <p>Пока экран открыт, игрок сидит на месте, а камера смотрит на экран. Поворот мыши двигает курсор-стрелку.</p>
+        <div class="keys">
+          <div class="key"><kbd>ЛКМ по узлу</kbd><span>изучить узел или его следующий ранг</span></div>
+          <div class="key"><kbd>ЛКМ по пустому месту</kbd><span>взять дерево и тащить, второй клик — отпустить</span></div>
+          <div class="key"><kbd>Колесо мыши</kbd><span>приблизить или отдалить вокруг курсора</span></div>
+          <div class="key"><kbd>ЛКМ по вкладке</kbd><span>переключить дерево</span></div>
+          <div class="key"><kbd>«Сброс навыков» ×2</kbd><span>сбросить дерево за уровни опыта, второе нажатие подтверждает</span></div>
+          <div class="key"><kbd>Shift</kbd><span>закрыть экран</span></div>
+        </div>
+        <p>При наведении на узел справа появляется панель: описание, цена, требования и что даёт узел в цифрах.</p>
+        <p class="req"><span class="y">· после «Ядро»</span><br><span class="x">· уровень 15 (ваш макс. 12)</span><br><span class="y">· свободно очков: 3</span></p>
+        <h3>Когда экран не открывается</h3>
+        <p>Пока экран открыт, игрок беззащитен в мире. Поэтому экран не открывается в бою (10 секунд после урона), в воде и лаве, в огне, в полёте и на транспорте. Любой урон закрывает экран.</p>
+      </section>
+
+      <section id="commands">
+        <h2>Команды и права</h2>
+        <div class="table-box"><table>
+          <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+          <tbody>
+            <tr><td><code>/skilltree</code></td><td>Открыть или закрыть экран.</td></tr>
+            <tr><td><code>/skilltree &lt;дерево&gt;</code></td><td>Открыть сразу на вкладке дерева, например <code>/skilltree gathering</code>.</td></tr>
+            <tr><td><code>/skilltree fov</code></td><td>Калибровка под свой FOV: поднять золотую линию к краю экрана и кликнуть. То же — кнопка «FOV · изменить» на экране.</td></tr>
+            <tr><td><code>/skilltree fov &lt;30-110&gt;</code></td><td>Указать свой FOV из настроек Minecraft числом. <code>/skilltree fov сброс</code> вернёт значение по умолчанию.</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Для администраторов</h3>
+        <p>Работают и из консоли, поэтому их можно вызывать из других плагинов: квестов, наград, доната. Действуют только на игроков в сети.</p>
+        <div class="table-box"><table>
+          <thead><tr><th>Команда</th><th>Что делает</th></tr></thead>
+          <tbody>
+            <tr><td><code>/skilltree reload</code></td><td>Перечитать <code>config.yml</code>, <code>messages.yml</code> и все деревья.</td></tr>
+            <tr><td><code>/skilltree reset &lt;ник&gt; [дерево]</code></td><td>Сбросить изученное в дереве, без дерева — во всех. Очки возвращаются.</td></tr>
+            <tr><td><code>/skilltree points &lt;ник&gt; [дерево]</code></td><td>Показать очки: потрачено, всего, откуда взялись.</td></tr>
+            <tr><td><code>/skilltree points &lt;ник&gt; &lt;дерево&gt; add|take|set &lt;n&gt;</code></td><td>Выдать, забрать или задать бонусные очки дерева. Открытый экран обновится сразу.</td></tr>
+            <tr><td><code>/skilltree learn &lt;ник&gt; &lt;дерево&gt; &lt;узел&gt;</code></td><td>Выдать следующий ранг узла без проверки родителей, уровня и права. Очки тратятся как обычно.</td></tr>
+            <tr><td><code>/skilltree unlearn &lt;ник&gt; &lt;дерево&gt; &lt;узел&gt;</code></td><td>Забрать ранг узла. Если узел забыт совсем, забываются и потомки, которым он был нужен.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="table-box"><table>
+          <thead><tr><th>Право</th><th>По умолчанию</th><th>Даёт</th></tr></thead>
+          <tbody>
+            <tr><td><code>skilltree.use</code></td><td>все</td><td>Открывать экран дерева. Свой FOV (<code>/screenui fov</code>) может менять каждый.</td></tr>
+            <tr><td><code>skilltree.admin</code></td><td>операторы</td><td>reload, reset, points, learn, unlearn.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="trees">
+        <h2>Деревья</h2>
+        <p>Каждый файл <code>plugins/SkillTree/trees/&lt;id&gt;.yml</code> — отдельное дерево и вкладка на экране. Id дерева — имя файла. У каждого дерева свои очки, изученное и сброс. Если дерево одно, вкладок на экране нет.</p>
+<pre><code><span class="k">tab</span>: "РЕМЕСЛО"          <span class="c"># подпись вкладки</span>
+<span class="k">order</span>: 2                <span class="c"># место вкладки: меньше — выше</span>
+<span class="k">title</span>: "РЕМЕСЛО"        <span class="c"># заголовок экрана</span>
+<span class="k">points</span>: 2               <span class="c"># очки у каждого игрока изначально</span>
+
+<span class="k">level-points</span>:           <span class="c"># очки за уровни опыта</span>
+  <span class="k">every</span>: 10              <span class="c"># 1 очко каждые 10 уровней</span>
+  <span class="k">amount</span>: 1
+  <span class="k">max</span>: 8                 <span class="c"># не больше 8 за уровни</span>
+
+<span class="k">respec</span>:                 <span class="c"># сброс самим игроком</span>
+  <span class="k">levels</span>: 3              <span class="c"># цена: 3 уровня…</span>
+  <span class="k">per-point</span>: 1           <span class="c"># …+1 за каждое потраченное очко</span>
+
+<span class="k">nodes</span>:
+  <span class="k">core</span>: { x: 0, y: 0, icon: wooden_pickaxe, name: "Подмастерье" }
+  <span class="k">d1</span>:
+    x: 1
+    y: 0
+    icon: iron_pickaxe
+    name: "Шахтёр"
+    description: "+10% к скорости добычи"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { block_break_speed: 10% }
+
+<span class="k">labels</span>:
+  - { x: 3, y: -0.55, text: "ДОБЫЧА" }</code></pre>
+        <p>После правки — <code>/skilltree reload</code>. Если в файле ошибка, все ошибки с номерами узлов выводятся в консоль, а в игре остаётся прежняя версия этого дерева.</p>
+      </section>
+
+      <section id="nodes">
+        <h2>Узлы</h2>
+        <div class="table-box"><table>
+          <thead><tr><th>Поле</th><th>Что задаёт</th></tr></thead>
+          <tbody>
+            <tr><td><code>x</code>, <code>y</code></td><td>Клетка сетки: 0,0 — центр, x вправо, y вверх. Два узла в одной клетке нельзя.</td></tr>
+            <tr><td><code>icon</code></td><td>Ванильный предмет (<code>diamond_sword</code>) или предмет Nexo (<code>nexo:fire_orb</code>).</td></tr>
+            <tr><td><code>icon-model</code></td><td>Модель из ресурспака поверх иконки: <code>namespace:путь</code>. Работает без Nexo.</td></tr>
+            <tr><td><code>name</code>, <code>description</code></td><td>Название и описание для подсказки. Можно цвета MiniMessage: <code>"&lt;gold&gt;Палач&lt;/gold&gt;"</code>.</td></tr>
+            <tr><td><code>parent</code></td><td>Узел, который нужно изучить раньше. Можно список <code>[a1, s1]</code> — тогда хватит любого. Без parent узел стартовый и изучен сразу.</td></tr>
+            <tr><td><code>parent-mode</code></td><td><code>all</code> — нужны все родители из списка (узел на стыке веток). По умолчанию <code>any</code> — любой.</td></tr>
+            <tr><td><code>cost</code></td><td>Цена в очках, по умолчанию 1. У узла с рангами — за каждый ранг.</td></tr>
+            <tr><td><code>ranks</code></td><td>Сколько раз узел можно изучить. Атрибуты умножаются на ранг, на узле видна плашка «2/3».</td></tr>
+            <tr><td><code>min-level</code></td><td>С какого уровня опыта открывается.</td></tr>
+            <tr><td><code>permission</code></td><td>Право, без которого узел закрыт, например для VIP. Текст в подсказке — <code>permission-text</code>.</td></tr>
+            <tr><td><code>hidden</code></td><td><code>true</code> — узел показан «?» без иконки и названия, пока не изучен его родитель.</td></tr>
+          </tbody>
+        </table></div>
+        <h3>Что даёт узел — effects</h3>
+<pre><code><span class="k">effects</span>:
+  <span class="k">attributes</span>:            <span class="c"># пока узел изучен; число или процент, за один ранг</span>
+    max_health: 2          <span class="c"># +1 сердце</span>
+    movement_speed: 5%
+  <span class="k">permissions</span>:           <span class="c"># права, пока узел изучен</span>
+    - someplugin.feature
+  <span class="k">commands</span>:              <span class="c"># от консоли, один раз — при первом изучении ранга</span>
+    - "give {player} diamond 3"</code></pre>
+        <p>Названия атрибутов — как в команде <code>/attribute</code>: <code>max_health</code>, <code>armor</code>, <code>attack_damage</code>, <code>movement_speed</code>, <code>luck</code>, <code>block_break_speed</code>, <code>oxygen_bonus</code>, <code>step_height</code> и другие. В командах можно подставить <code>{player}</code>, <code>{uuid}</code>, <code>{node}</code>, <code>{rank}</code>, <code>{tree}</code>.</p>
+        <div class="note">Команды выполняются только при первом получении ранга. Если игрок сбросит навыки и изучит узел заново, награда не выдастся второй раз.</div>
+      </section>
+
+      <section id="points">
+        <h2>Очки и сброс</h2>
+        <p>Очки игрока в дереве складываются из трёх частей:</p>
+        <ul class="plain">
+          <li><b>Базовые</b> — <code>points</code> из файла дерева.</li>
+          <li><b>За уровни опыта</b> — <code>level-points</code>: равномерно (<code>every</code>, <code>amount</code>) или своими порогами <code>milestones: { 5: 1, 10: 1, 20: 2 }</code>, с потолком <code>max</code>. Считаются по максимальному уровню, которого игрок достигал, поэтому смерть и зачарование их не отнимают.</li>
+          <li><b>Бонусные</b> — выданные командой <code>/skilltree points</code>.</li>
+        </ul>
+        <p>Игрок может сам сбросить дерево кнопкой «Сброс навыков» на экране, если в файле есть секция <code>respec</code>. Цена — уровни опыта: <code>levels</code> плюс <code>per-point</code> за каждое потраченное очко. Все очки возвращаются.</p>
+      </section>
+
+      <section id="config">
+        <h2>config.yml</h2>
+        <div class="table-box"><table>
+          <thead><tr><th>Ключ</th><th>По умолчанию</th><th>Что задаёт</th></tr></thead>
+          <tbody>
+            <tr><td><code>sensitivity</code></td><td><code>0.028</code></td><td>Скорость курсора: сколько экрана он проходит за 1° поворота мыши.</td></tr>
+            <tr><td><code>fov</code></td><td><code>70</code></td><td>FOV, под который строится экран, если игрок не указал свой.</td></tr>
+            <tr><td><code>hud-mode</code></td><td><code>spectator</code></td><td>Как спрятать интерфейс игры на время экрана. <code>spectator</code> прячет полоску опыта и прицел, <code>creative</code> — только полоску опыта, <code>none</code> — ничего. Режим меняется только для клиента: на сервере игрок остаётся в приключении.</td></tr>
+            <tr><td><code>protection.combat-seconds</code></td><td><code>10</code></td><td>Сколько секунд после урона экран нельзя открыть.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="messages">
+        <h2>Тексты — messages.yml</h2>
+        <p>Все тексты экрана, подсказок, панели подробностей, сообщений в чат и ответов команд лежат в <code>messages.yml</code>. Можно перевести плагин на другой язык или поменять формулировки.</p>
+        <ul class="plain">
+          <li>Цвета — разметка MiniMessage: <code>&lt;red&gt;</code>, <code>&lt;#e8b84a&gt;</code>, <code>&lt;gradient:…&gt;</code>.</li>
+          <li>Подстановки — <code>{имя}</code>. Какие доступны, написано в комментарии у каждой строки.</li>
+          <li>Формы слов для чисел — списком: <code>points: [очко, очка, очков]</code>. Для английского достаточно двух форм.</li>
+          <li>Если ключа нет в файле, например после обновления, берётся текст по умолчанию.</li>
+        </ul>
+      </section>
+
+      <section id="papi">
+        <h2>Плейсхолдеры PlaceholderAPI</h2>
+        <p>Про конкретное дерево — <code>%skilltree_&lt;дерево&gt;_points_free%</code>. Без дерева — про первое по порядку вкладок.</p>
+        <div class="table-box"><table>
+          <thead><tr><th>Плейсхолдер</th><th>Значение</th></tr></thead>
+          <tbody>
+            <tr><td><code>%skilltree_points_free%</code></td><td>Свободные очки. Также <code>_points_total</code> и <code>_points_spent</code>.</td></tr>
+            <tr><td><code>%skilltree_points_level%</code></td><td>Очки за уровни. Также <code>_points_base</code> и <code>_points_bonus</code>.</td></tr>
+            <tr><td><code>%skilltree_max_level%</code></td><td>Максимальный достигнутый уровень опыта.</td></tr>
+            <tr><td><code>%skilltree_next_point_level%</code></td><td>На каком уровне придёт следующее очко.</td></tr>
+            <tr><td><code>%skilltree_learned%</code></td><td>Сколько узлов изучено. <code>%skilltree_nodes%</code> — сколько всего.</td></tr>
+            <tr><td><code>%skilltree_learned_&lt;узел&gt;%</code></td><td>Изучен ли узел: <code>true</code> или <code>false</code>.</td></tr>
+            <tr><td><code>%skilltree_rank_&lt;узел&gt;%</code></td><td>Изученный ранг узла.</td></tr>
+            <tr><td><code>%skilltree_respec_cost%</code></td><td>Цена сброса в уровнях.</td></tr>
+          </tbody>
+        </table></div>
+        <p>Плейсхолдеры работают для игроков в сети. Для остальных возвращается пустая строка.</p>
+      </section>
+
+      <section id="limits">
+        <h2>Ограничения</h2>
+        <ul class="plain">
+          <li><b>FOV.</b> Клиент не сообщает серверу свой FOV. Экран строится под FOV 70, игрок с другим FOV настраивает свой калибровкой (<code>/skilltree fov</code> или кнопка на экране). При первом открытии калибровка запускается сама.</li>
+          <li><b>Вид от третьего лица (F5).</b> Экран выглядит мельче: камера отъезжает назад, а переключить игроку вид сервер не может.</li>
+          <li><b>Пинг.</b> Курсор движется с задержкой, равной пингу игрока.</li>
+          <li><b>Экран над миром.</b> Он висит на 64 блока выше потолка мира. Если в <code>paper-world-defaults.yml</code> включён <code>entities.tracking-range-y</code>, экран может не дойти до клиента.</li>
+          <li><b>Узкие мониторы.</b> Экран рассчитан на 16:9. На 4:3 вкладки и кнопку сброса по краям может обрезать.</li>
+        </ul>
+        <p>Изученные навыки, очки и свой FOV хранятся в данных игрока на сервере, отдельная база не нужна.</p>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,315 @@
+# Skill tree — one tab of the /skilltree screen. Every file in the trees/ folder is a separate tree with its
+# own points; the tree id is the file name (main.yml → main): /skilltree main opens the screen on this tab.
+# After editing — /skilltree reload (screens already open keep the old version). If the file has errors, the
+# list of errors goes to the console and the game keeps the previous version of this tree.
+
+# Tab label and its position (lower — higher). Tabs are shown only if there is more than one tree.
+tab: "BASICS"
+order: 1
+
+# Screen title on this tab.
+title: "SKILL TREE"
+
+# Points every player starts with (each tree has its own). More can be granted with a command:
+#   /skilltree points <player> main add|take|set <n>   (works from the console too — handy for other plugins' rewards)
+points: 3
+
+# Points for experience levels. Counted by the HIGHEST level the player has ever reached: death and
+# enchanting don't take them away. Players who already have a high level get the points on join.
+level-points:
+  enabled: true
+  # Evenly: amount points every `every` levels (5, 10, 15, ...).
+  every: 5
+  amount: 1
+  # Cap on points from levels (0 — no cap).
+  max: 15
+  # Or instead of every — your own thresholds "level: points" (remove every then):
+  # milestones:
+  #   5: 1
+  #   10: 1
+  #   20: 2
+  #   30: 3
+
+# Players resetting their own skills — the "RESET SKILLS" button on the screen (press twice).
+# Price in XP levels: levels + per-point for every spent point. Points are returned; what one-time node
+# commands gave stays and is not given again. Reset doesn't take away points from levels.
+respec:
+  enabled: true
+  levels: 5
+  per-point: 1
+
+# Nodes. The key is the node id (latin letters, no spaces).
+#   x, y   — grid cell: 0,0 — center, x to the right, y up. Two nodes can't share a cell.
+#   icon   — icon item: a vanilla item id (diamond_sword, nether_star, ...) or a Nexo item —
+#            nexo:<item id> (requires Nexo).
+#   icon-model — a resource pack model over the icon (item_model component): namespace:path, e.g.
+#            myserver:skills/fire. Works without Nexo — with any resource pack. Optional.
+#            Prefer flat items: blocks and items with special models (shield, chest, heads) are drawn by a
+#            shader the ScreenUI-shaders pack can't fix, so with it they don't follow the player's FOV.
+#   name   — name in the hint. name, description, permission-text, title, tab and labels support
+#            MiniMessage markup: "<gold>Executioner</gold>", "<gradient:#e8b84a:#ff6a00>Archmage</gradient>".
+#   parent — id of the node to learn first. Without parent — a starting node: learned at once and for free.
+#            Can be a list: parent: [a1, s1] — then ANY learned one of them is enough (branches merge).
+#            The line to a parent is straight if they share a grid line, otherwise it bends.
+#   parent-mode — all: ALL parents from the list are required (a node where branches meet); default any.
+#   min-level — XP level that unlocks it (by the highest level reached; default 0).
+#   permission — permission without which the node is locked (e.g. for VIPs); permission-text — what to show
+#            in the hint if the permission is missing (default "no access").
+#   cost   — how many points it costs (default 1); for a node with ranks — each rank.
+#   hidden — true: until one of its parents is learned, the node is shown as "?" — no icon, name or effects.
+#   ranks  — how many times the node can be learned (default 1). Attributes in effects are per rank:
+#            rank 3 with max_health: 2 gives +6. Commands run on first reaching each rank
+#            ({rank} — rank number). The node shows a "2/3" badge, the hint adds "per rank" to the cost.
+#   description — what the node gives, shown in the hint (optional).
+#   effects — what a learned node gives (all optional):
+#     attributes  — attribute bonus while the node is learned: a number (max_health: 4) or a percent of the
+#                   value (movement_speed: 10%). Ids as in /attribute: max_health, movement_speed,
+#                   attack_damage, armor, luck, block_interaction_range, ...
+#     permissions — permissions while the node is learned.
+#     commands    — console commands run ONCE — when the node is first learned. After a reset and learning
+#                   again they don't run again (and a reset doesn't undo them).
+#                   Placeholders: {player} — name, {uuid}, {node} — node id, {rank} — rank, {tree} — tree id.
+nodes:
+  core: { x: 0, y: 0, icon: nether_star, name: "Core", description: "the beginning" }
+
+  # ── Arcana (up): luck and magic ────────────────────────────────────
+  a1:
+    x: 0
+    y: 1
+    icon: amethyst_shard
+    name: "Crystal"
+    description: "+1 luck"
+    parent: core
+    ranks: 2
+    effects:
+      attributes: { luck: 1 }
+  a2:
+    x: 0
+    y: 2
+    icon: enchanted_book
+    name: "Tome"
+    description: "+1 block of interaction range"
+    parent: a1
+    effects:
+      attributes: { block_interaction_range: 1 }
+  a3:
+    x: -1
+    y: 2
+    icon: lapis_lazuli
+    name: "Mana Reserve"
+    description: "5 XP levels (once)"
+    parent: a2
+    effects:
+      commands:
+        - "xp add {player} 5 levels"
+  a4:
+    x: 1
+    y: 2
+    icon: blaze_powder
+    name: "Spark"
+    description: "burn half as long"
+    parent: a2
+    effects:
+      attributes: { burning_time: -50% }
+  a5:
+    x: 0
+    y: 3
+    icon: end_crystal
+    name: "Archmage"
+    description: "+2 luck, +1 interaction range"
+    parent: a2
+    cost: 2
+    effects:
+      attributes: { luck: 2, block_interaction_range: 1 }
+      # Example of granting a permission (e.g. a key to another plugin's command):
+      # permissions: [ "someplugin.feature" ]
+
+  # ── Nature (left): health and vitality ─────────────────────────────
+  n1:
+    x: -1
+    y: 0
+    icon: oak_sapling
+    name: "Sprout"
+    description: "+1 heart"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { max_health: 2 }
+  n2:
+    x: -2
+    y: 0
+    icon: emerald
+    name: "Emerald"
+    description: "16 emeralds (once)"
+    parent: n1
+    effects:
+      commands:
+        - "give {player} emerald 16"
+  n3:
+    x: -2
+    y: 1
+    icon: glow_berries
+    name: "Berries"
+    description: "+1 heart"
+    parent: n2
+    effects:
+      attributes: { max_health: 2 }
+  n4:
+    x: -2
+    y: -1
+    icon: honey_bottle
+    name: "Honey"
+    description: "-25% fall damage"
+    parent: n2
+    effects:
+      attributes: { fall_damage_multiplier: -25% }
+  n5:
+    x: -3
+    y: 0
+    icon: golden_apple
+    name: "Life"
+    description: "+2 hearts"
+    parent: n2
+    cost: 2
+    effects:
+      attributes: { max_health: 4 }
+
+  # ── Shadow (right): speed and agility ──────────────────────────────
+  s1:
+    x: 1
+    y: 0
+    icon: echo_shard
+    name: "Echo"
+    description: "+3% speed"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { movement_speed: 3% }
+  s2:
+    x: 2
+    y: 0
+    icon: ender_pearl
+    name: "Leap"
+    description: "10% higher jump"
+    parent: s1
+    effects:
+      attributes: { jump_strength: 10% }
+  s3:
+    x: 2
+    y: 1
+    icon: ink_sac
+    name: "Ink"
+    description: "+30% sneaking speed"
+    parent: s2
+    effects:
+      attributes: { sneaking_speed: 30% }
+  s4:
+    x: 2
+    y: -1
+    icon: phantom_membrane
+    name: "Phantom"
+    description: "fall 3 blocks higher without damage"
+    parent: s2
+    effects:
+      attributes: { safe_fall_distance: 3 }
+  s5:
+    x: 3
+    y: 0
+    icon: wither_rose
+    name: "Wither"
+    description: "+5% speed, +1 damage"
+    parent: s2
+    cost: 2
+    effects:
+      attributes: { movement_speed: 5%, attack_damage: 1 }
+
+  # ── Might (down): damage and defense ───────────────────────────────
+  m1:
+    x: 0
+    y: -1
+    icon: iron_sword
+    name: "Blade"
+    description: "+1 damage, an iron sword"
+    parent: core
+    effects:
+      attributes: { attack_damage: 1 }
+      commands:
+        - "give {player} iron_sword 1"
+  m2:
+    x: 0
+    y: -2
+    icon: iron_chestplate
+    name: "Shield"
+    description: "+2 armor"
+    parent: m1
+    effects:
+      attributes: { armor: 2 }
+  m3:
+    x: -1
+    y: -2
+    icon: iron_axe
+    name: "Axe"
+    description: "+10% attack speed"
+    parent: m2
+    effects:
+      attributes: { attack_speed: 10% }
+  m4:
+    x: 1
+    y: -2
+    icon: bow
+    name: "Bow"
+    description: "a bow and 32 arrows (once)"
+    parent: m2
+    effects:
+      commands:
+        - "give {player} bow 1"
+        - "give {player} arrow 32"
+  m5:
+    x: 0
+    y: -3
+    icon: netherite_sword
+    name: "<gradient:#e8b84a:#ff6a00>Executioner</gradient>"
+    description: "+2 damage, +1 armor toughness"
+    parent: m2
+    hidden: true
+    cost: 2
+    effects:
+      attributes: { attack_damage: 2, armor_toughness: 1 }
+
+  # ── Crossroads: unlocked from either of the two neighboring branches ──
+  x1:
+    x: 1
+    y: 1
+    icon: amethyst_cluster
+    name: "Twilight"
+    description: "+1 luck, +3% speed"
+    parent: [a1, s1]
+    min-level: 15
+    effects:
+      attributes: { luck: 1, movement_speed: 3% }
+  x2:
+    x: -1
+    y: -1
+    icon: sweet_berries
+    name: "Balance"
+    description: "+1 heart, +1 armor"
+    parent: [n1, m1]
+    min-level: 15
+    effects:
+      attributes: { max_health: 2, armor: 1 }
+  # Example of a VIP-only node:
+  # x3:
+  #   x: -1
+  #   y: 1
+  #   icon: gold_ingot
+  #   name: "Privilege"
+  #   parent: [a1, n1]
+  #   permission: "skilltree.vip"
+  #   permission-text: "VIP only"
+
+# Labels on the tree field: x, y — in grid cells (fractions allowed), they move with the tree.
+labels:
+  - { x: 0, y: 3.55, text: "ARCANA" }
+  - { x: -3, y: -0.55, text: "NATURE" }
+  - { x: 3, y: -0.55, text: "SHADOW" }
+  - { x: 0, y: -3.55, text: "MIGHT" }

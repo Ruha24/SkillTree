@@ -1,0 +1,315 @@
+# Дерево навыков — одна вкладка экрана /skilltree. Каждый файл в папке trees/ — отдельное дерево со своими
+# очками; id дерева — имя файла (main.yml → main): /skilltree main откроет экран сразу на этой вкладке.
+# После правки — /skilltree reload (уже открытые экраны досмотрят старое). Если в файле ошибка, в консоль
+# пишется список ошибок, а в игре остаётся прежняя версия этого дерева.
+
+# Подпись вкладки и её место (меньше — выше). Вкладки видны, только если деревьев больше одного.
+tab: "ОСНОВЫ"
+order: 1
+
+# Заголовок экрана на этой вкладке.
+title: "ДРЕВО НАВЫКОВ"
+
+# Сколько очков у каждого игрока изначально (у каждого дерева — свои). Сверх этого можно выдавать командой:
+#   /skilltree points <ник> main add|take|set <n>   (из консоли тоже — удобно для наград других плагинов)
+points: 3
+
+# Очки за уровни опыта. Считаются по МАКСИМАЛЬНОМУ уровню, которого игрок достигал: смерть и
+# зачарование их не отнимают. Игроки, у которых уровень уже высокий, получат очки при входе.
+level-points:
+  enabled: true
+  # Равномерно: amount очков за каждые every уровней (5, 10, 15, ...).
+  every: 5
+  amount: 1
+  # Потолок очков за уровни (0 — без потолка).
+  max: 15
+  # Или вместо every — свои пороги «уровень: очков» (every тогда уберите):
+  # milestones:
+  #   5: 1
+  #   10: 1
+  #   20: 2
+  #   30: 3
+
+# Сброс навыков самим игроком — кнопка «СБРОС НАВЫКОВ» на экране (двойное нажатие).
+# Цена в уровнях опыта: levels + per-point за каждое потраченное очко. Очки возвращаются; что выдали
+# разовые commands узлов — остаётся, повторно не выдаётся. Очки за уровни сброс не отнимает.
+respec:
+  enabled: true
+  levels: 5
+  per-point: 1
+
+# Узлы. Ключ — id узла (латиница, без пробелов).
+#   x, y   — клетка сетки: 0,0 — центр, x вправо, y вверх. Две ноды в одной клетке нельзя.
+#   icon   — предмет-иконка: id ванильного предмета (diamond_sword, nether_star, ...) или предмет Nexo —
+#            nexo:<id предмета> (нужен установленный Nexo).
+#   icon-model — модель из ресурспака поверх иконки (компонент item_model): namespace:путь, например
+#            provence:skills/fire. Работает и без Nexo — с любым ресурспаком. Необязательно.
+#            Лучше плоские предметы: блоки и предметы со своей моделью (щит, сундук, головы) рисует шейдер,
+#            который пак ScreenUI-shaders не правит, — с ним они не подстраиваются под FOV игрока.
+#   name   — название в подсказке. В name, description, permission-text, title, tab и подписях labels можно
+#            разметку MiniMessage: "<gold>Палач</gold>", "<gradient:#e8b84a:#ff6a00>Архимаг</gradient>".
+#   parent — id узла, который надо изучить раньше. Без parent — стартовый узел: изучен сразу и бесплатно.
+#            Можно список: parent: [a1, s1] — тогда хватит ЛЮБОГО изученного из них (ветки сходятся).
+#   parent-mode — all: нужны ВСЕ родители из списка (узел на стыке веток); по умолчанию any — любой.
+#            Линия к родителю рисуется прямо, если они на одной линии сетки, иначе — уголком.
+#   min-level — с какого уровня опыта открывается (по максимальному достигнутому; по умолчанию 0).
+#   permission — право, без которого узел закрыт (например, для VIP); permission-text — что написать
+#            в подсказке, если права нет (по умолчанию «нет доступа»).
+#   cost   — сколько очков стоит (по умолчанию 1); у узла с рангами — каждый ранг.
+#   hidden — true: пока не изучен ни один родитель, узел показан «?» — без иконки, названия и эффектов.
+#   ranks  — сколько раз узел можно изучить (по умолчанию 1). Атрибуты в effects — за один ранг:
+#            ранг 3 с max_health: 2 даёт +6. Команды выполняются при первом получении каждого ранга
+#            ({rank} — номер ранга). На узле видна плашка «2/3», в подсказке к описанию добавится «за ранг».
+#   description — что даёт узел, показывается в подсказке (необязательно).
+#   effects — что даёт изученный узел (всё необязательно):
+#     attributes  — прибавка к атрибутам, пока узел изучен: число (max_health: 4) или процент от
+#                   значения (movement_speed: 10%). Id — как в /attribute: max_health, movement_speed,
+#                   attack_damage, armor, luck, block_interaction_range, ...
+#     permissions — права, пока узел изучен.
+#     commands    — команды от консоли ОДИН раз — при первом изучении узла. После сброса и повторного
+#                   изучения не выполняются снова (и сброс их не откатывает).
+#                   Подстановки: {player} — ник, {uuid}, {node} — id узла, {rank} — ранг, {tree} — id дерева.
+nodes:
+  core: { x: 0, y: 0, icon: nether_star, name: "Ядро", description: "начало пути" }
+
+  # ── Аркана (вверх): удача и магия ──────────────────────────────────
+  a1:
+    x: 0
+    y: 1
+    icon: amethyst_shard
+    name: "Кристалл"
+    description: "+1 к удаче"
+    parent: core
+    ranks: 2
+    effects:
+      attributes: { luck: 1 }
+  a2:
+    x: 0
+    y: 2
+    icon: enchanted_book
+    name: "Фолиант"
+    description: "+1 блок к дальности взаимодействия"
+    parent: a1
+    effects:
+      attributes: { block_interaction_range: 1 }
+  a3:
+    x: -1
+    y: 2
+    icon: lapis_lazuli
+    name: "Запас маны"
+    description: "5 уровней опыта (разово)"
+    parent: a2
+    effects:
+      commands:
+        - "xp add {player} 5 levels"
+  a4:
+    x: 1
+    y: 2
+    icon: blaze_powder
+    name: "Искра"
+    description: "горите вдвое меньше"
+    parent: a2
+    effects:
+      attributes: { burning_time: -50% }
+  a5:
+    x: 0
+    y: 3
+    icon: end_crystal
+    name: "Архимаг"
+    description: "+2 к удаче, +1 к дальности взаимодействия"
+    parent: a2
+    cost: 2
+    effects:
+      attributes: { luck: 2, block_interaction_range: 1 }
+      # Пример выдачи права (например, ключ к команде другого плагина):
+      # permissions: [ "someplugin.feature" ]
+
+  # ── Природа (влево): здоровье и живучесть ──────────────────────────
+  n1:
+    x: -1
+    y: 0
+    icon: oak_sapling
+    name: "Росток"
+    description: "+1 сердце"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { max_health: 2 }
+  n2:
+    x: -2
+    y: 0
+    icon: emerald
+    name: "Изумруд"
+    description: "16 изумрудов (разово)"
+    parent: n1
+    effects:
+      commands:
+        - "give {player} emerald 16"
+  n3:
+    x: -2
+    y: 1
+    icon: glow_berries
+    name: "Ягоды"
+    description: "+1 сердце"
+    parent: n2
+    effects:
+      attributes: { max_health: 2 }
+  n4:
+    x: -2
+    y: -1
+    icon: honey_bottle
+    name: "Мёд"
+    description: "-25% урона от падения"
+    parent: n2
+    effects:
+      attributes: { fall_damage_multiplier: -25% }
+  n5:
+    x: -3
+    y: 0
+    icon: golden_apple
+    name: "Жизнь"
+    description: "+2 сердца"
+    parent: n2
+    cost: 2
+    effects:
+      attributes: { max_health: 4 }
+
+  # ── Тень (вправо): скорость и ловкость ─────────────────────────────
+  s1:
+    x: 1
+    y: 0
+    icon: echo_shard
+    name: "Эхо"
+    description: "+3% к скорости"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { movement_speed: 3% }
+  s2:
+    x: 2
+    y: 0
+    icon: ender_pearl
+    name: "Скачок"
+    description: "прыжок выше на 10%"
+    parent: s1
+    effects:
+      attributes: { jump_strength: 10% }
+  s3:
+    x: 2
+    y: 1
+    icon: ink_sac
+    name: "Чернила"
+    description: "+30% к скорости крадучись"
+    parent: s2
+    effects:
+      attributes: { sneaking_speed: 30% }
+  s4:
+    x: 2
+    y: -1
+    icon: phantom_membrane
+    name: "Фантом"
+    description: "падение без урона на 3 блока выше"
+    parent: s2
+    effects:
+      attributes: { safe_fall_distance: 3 }
+  s5:
+    x: 3
+    y: 0
+    icon: wither_rose
+    name: "Увядание"
+    description: "+5% к скорости, +1 к урону"
+    parent: s2
+    cost: 2
+    effects:
+      attributes: { movement_speed: 5%, attack_damage: 1 }
+
+  # ── Мощь (вниз): урон и защита ─────────────────────────────────────
+  m1:
+    x: 0
+    y: -1
+    icon: iron_sword
+    name: "Клинок"
+    description: "+1 к урону, железный меч"
+    parent: core
+    effects:
+      attributes: { attack_damage: 1 }
+      commands:
+        - "give {player} iron_sword 1"
+  m2:
+    x: 0
+    y: -2
+    icon: iron_chestplate
+    name: "Щит"
+    description: "+2 к броне"
+    parent: m1
+    effects:
+      attributes: { armor: 2 }
+  m3:
+    x: -1
+    y: -2
+    icon: iron_axe
+    name: "Топор"
+    description: "+10% к скорости атаки"
+    parent: m2
+    effects:
+      attributes: { attack_speed: 10% }
+  m4:
+    x: 1
+    y: -2
+    icon: bow
+    name: "Лук"
+    description: "лук и 32 стрелы (разово)"
+    parent: m2
+    effects:
+      commands:
+        - "give {player} bow 1"
+        - "give {player} arrow 32"
+  m5:
+    x: 0
+    y: -3
+    icon: netherite_sword
+    name: "<gradient:#e8b84a:#ff6a00>Палач</gradient>"
+    description: "+2 к урону, +1 к прочности брони"
+    parent: m2
+    hidden: true
+    cost: 2
+    effects:
+      attributes: { attack_damage: 2, armor_toughness: 1 }
+
+  # ── Перекрёстки: открываются из любой из двух соседних веток ──────
+  x1:
+    x: 1
+    y: 1
+    icon: amethyst_cluster
+    name: "Сумерки"
+    description: "+1 к удаче, +3% к скорости"
+    parent: [a1, s1]
+    min-level: 15
+    effects:
+      attributes: { luck: 1, movement_speed: 3% }
+  x2:
+    x: -1
+    y: -1
+    icon: sweet_berries
+    name: "Равновесие"
+    description: "+1 сердце, +1 к броне"
+    parent: [n1, m1]
+    min-level: 15
+    effects:
+      attributes: { max_health: 2, armor: 1 }
+  # Пример узла только для VIP:
+  # x3:
+  #   x: -1
+  #   y: 1
+  #   icon: gold_ingot
+  #   name: "Привилегия"
+  #   parent: [a1, n1]
+  #   permission: "skilltree.vip"
+  #   permission-text: "только для VIP"
+
+# Подписи на поле дерева: x, y — в клетках сетки (можно дробные), двигаются вместе с деревом.
+labels:
+  - { x: 0, y: 3.55, text: "АРКАНА" }
+  - { x: -3, y: -0.55, text: "ПРИРОДА" }
+  - { x: 3, y: -0.55, text: "ТЕНЬ" }
+  - { x: 0, y: -3.55, text: "МОЩЬ" }

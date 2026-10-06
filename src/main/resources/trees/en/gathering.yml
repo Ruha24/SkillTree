@@ -1,0 +1,164 @@
+# The second tree — "Craft": mining, underwater work, building. Same format as main.yml (it has a detailed
+# description of every field). This tree has its own points: /skilltree points <player> gathering add <n>.
+
+tab: "CRAFT"
+order: 2
+
+title: "CRAFT"
+
+points: 2
+
+level-points:
+  enabled: true
+  every: 10
+  amount: 1
+  max: 8
+
+respec:
+  enabled: true
+  levels: 3
+  per-point: 1
+
+nodes:
+  core: { x: 0, y: 0, icon: wooden_pickaxe, name: "Apprentice", description: "the beginning of craft" }
+
+  # ── Mining (right) ─────────────────────────────────────────────────
+  d1:
+    x: 1
+    y: 0
+    icon: iron_pickaxe
+    name: "Miner"
+    description: "+10% mining speed"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { block_break_speed: 10% }
+  d2:
+    x: 2
+    y: 0
+    icon: diamond_pickaxe
+    name: "Steady Hand"
+    description: "+2 tool efficiency"
+    parent: d1
+    effects:
+      attributes: { mining_efficiency: 2 }
+  d3:
+    x: 3
+    y: 0
+    icon: netherite_pickaxe
+    name: "Master Miner"
+    description: "+15% mining speed"
+    parent: d2
+    cost: 2
+    min-level: 20
+    effects:
+      attributes: { block_break_speed: 15% }
+  d4:
+    x: 2
+    y: 1
+    icon: torch
+    name: "Torches"
+    description: "32 torches (once)"
+    parent: d2
+    effects:
+      commands:
+        - "give {player} torch 32"
+
+  # ── Water (left) ───────────────────────────────────────────────────
+  w1:
+    x: -1
+    y: 0
+    icon: prismarine_shard
+    name: "Diver"
+    description: "longer without air"
+    parent: core
+    ranks: 3
+    effects:
+      attributes: { oxygen_bonus: 1 }
+  w2:
+    x: -2
+    y: 0
+    icon: heart_of_the_sea
+    name: "Submariner"
+    description: "dig faster underwater"
+    parent: w1
+    effects:
+      attributes: { submerged_mining_speed: 0.3 }
+  w3:
+    x: -2
+    y: 1
+    icon: nautilus_shell
+    name: "Swimmer"
+    description: "swim faster"
+    parent: w2
+    effects:
+      attributes: { water_movement_efficiency: 0.33 }
+  w4:
+    x: -3
+    y: 0
+    icon: trident
+    name: "Lord of the Deep"
+    description: "underwater as on land"
+    parent: w2
+    cost: 2
+    effects:
+      attributes: { submerged_mining_speed: 0.5, water_movement_efficiency: 0.33 }
+
+  # ── Building (up) ──────────────────────────────────────────────────
+  b1:
+    x: 0
+    y: 1
+    icon: brick
+    name: "Mason"
+    description: "+0.5 block of interaction range"
+    parent: core
+    ranks: 2
+    effects:
+      attributes: { block_interaction_range: 0.5 }
+  b2:
+    x: 0
+    y: 2
+    icon: ladder
+    name: "Scaffolding"
+    description: "fall 2 blocks higher without damage"
+    parent: b1
+    effects:
+      attributes: { safe_fall_distance: 2 }
+  b3:
+    x: -1
+    y: 2
+    icon: rabbit_foot
+    name: "Steps"
+    description: "step up a block without jumping"
+    parent: b2
+    min-level: 10
+    effects:
+      attributes: { step_height: 0.5 }
+
+  # ── Farming (down) ─────────────────────────────────────────────────
+  h1:
+    x: 0
+    y: -1
+    icon: wheat
+    name: "Farmer"
+    description: "16 bone meal (once)"
+    parent: core
+    effects:
+      commands:
+        - "give {player} bone_meal 16"
+  h2:
+    x: 0
+    y: -2
+    icon: golden_hoe
+    name: "Harvest"
+    description: "+1 luck (fishing, chests)"
+    parent: h1
+    ranks: 2
+    effects:
+      attributes: { luck: 1 }
+
+labels:
+  - { x: 3, y: -0.55, text: "MINING" }
+  - { x: -3, y: -0.55, text: "WATER" }
+  - { x: 0, y: 2.55, text: "BUILDING" }
+  - { x: 0, y: -2.55, text: "FARMING" }
